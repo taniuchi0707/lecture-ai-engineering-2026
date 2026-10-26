@@ -1,7 +1,7 @@
 """第1回 宿題（基礎）: 同じ質問を、モデルを変えて3回ずつ実行して比べる。
 
 使い方:
-    uv run python scripts/lec01_basic.py
+    PYTHONPATH=. uv run python scripts/lec01_basic.py
 
 結果は lectures/01/basic_runs.md に書き出す（回答の全文・トークン数・応答時間）。
 gemini-3.8-flash は無料枠のレート制限が厳しいため、1回ごとに15秒待つ。
