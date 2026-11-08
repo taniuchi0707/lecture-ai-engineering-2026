@@ -1,0 +1,16 @@
+$ uv run python -m app.agent --trace 第2回の内容から確認問題を1問出して
+
+[model] gemini-3.5-flash-lite
+第2回の内容から確認問題を出します！
+
+**問題：**
+「学習率（Learning Rate）」とは、機械学習・深層学習においてどのような役割を持つハイパーパラメータでしょうか？その特徴や調整による影響を含めて説明してください。
+
+（第2回）
+
+--- trace ---
+[tool call]   make_quiz({'lecture': 2})
+[tool return] make_quiz -> {"lecture": 2, "question": "「学習率」の意味は？", "answer": "1回の更新でパラメータをどれだけ動かすかを決めるハイパーパラメータ。大きすぎると学習が不安定になり、小さすぎると進みが遅い。"}…
+[usage] RunUsage(cost=Decimal('0.0004682'), details={'text_prompt_tokens': 969}, input_text_tokens=969, input_tokens=969, output_tokens=71, requests=2, tool_calls=1)
+
+(exit 0)
