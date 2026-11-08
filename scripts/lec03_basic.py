@@ -4,8 +4,8 @@ app/agent.py と app/tools.py のファイルは書き換えず、同じ指示�
 「1か所だけ違うエージェント」をこのスクリプトの中で組み立てて実行する。
 
 使い方:
-    uv run python scripts/lec03_basic.py                 # 全部の組み合わせを実行して lectures/03/basic_runs.md に書く
-    uv run python scripts/lec03_basic.py --repeat 1      # 各組み合わせを1回ずつ
+    PYTHONPATH=. uv run python scripts/lec03_basic.py                 # 全部の組み合わせを実行して lectures/03/basic_runs.md に書く
+    PYTHONPATH=. uv run python scripts/lec03_basic.py --repeat 1      # 各組み合わせを1回ずつ
 """
 
 import argparse
@@ -101,7 +101,7 @@ def main() -> None:
         "# 第3回 宿題（基礎）の実行ログ",
         "",
         f"- モデル: `{MODEL}`（既定の設定のまま。temperature などは変えていない）",
-        "- 実行: `uv run python scripts/lec03_basic.py`",
+        "- 実行: `PYTHONPATH=. uv run python scripts/lec03_basic.py`",
         "- 各組み合わせを同じ質問で繰り返し実行し、ツール呼び出し・`requests`・回答の全文を残した",
         "",
         "## 比べたエージェント",
