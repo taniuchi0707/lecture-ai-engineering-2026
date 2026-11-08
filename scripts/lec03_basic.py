@@ -9,6 +9,7 @@ app/agent.py と app/tools.py のファイルは書き換えず、同じ指示�
 """
 
 import argparse
+import inspect
 import time
 from pathlib import Path
 
@@ -23,15 +24,20 @@ from app.config import MODEL
 OUT = Path(__file__).resolve().parent.parent / "lectures" / "03" / "basic_runs.md"
 
 MUST_SEARCH = "- 用語や講座に固有のことを答える前に、必ず search_glossary で用語集を確認する。\n"
+SHOW_LECTURE = "- 回答の最後に、関係する回（第N回）を示す。\n"
+QUIZ_AT_END = "- 回答の最後に、確認問題を1問出す。\n"
 ONE_TERM = 'query には調べたい用語を1つだけ入れる（例: "LoRA"）。'
 MANY_TERMS = 'query には調べたい用語をまとめて入れる（例: "LoRA QLoRA"）。'
+USE_BEFORE = "AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について\n答える前に使うこと。"
 
-SEARCH_DOC = tools.search_glossary.__doc__
-assert MUST_SEARCH in INSTRUCTIONS and ONE_TERM in SEARCH_DOC, "元の指示・説明文が想定と違う"
+# Python の版によって docstring の字下げの有無が違うので、app.agent の tool_plain と同じく整えてから使う
+SEARCH_DOC = inspect.cleandoc(tools.search_glossary.__doc__)
+assert MUST_SEARCH in INSTRUCTIONS and SHOW_LECTURE in INSTRUCTIONS, "元の INSTRUCTIONS が想定と違う"
+assert ONE_TERM in SEARCH_DOC and USE_BEFORE in SEARCH_DOC, "元の search_glossary の説明文が想定と違う"
 
 
 def build(instructions: str = INSTRUCTIONS, search_doc: str = SEARCH_DOC) -> Agent:
-    """演習のエージェント（app/agent.py）と同じ3つのツールで組み立てる。変えるのは引数で渡した1か所だけ。"""
+    """演習のエージェント（app/agent.py）と同じ3つのツールで組み立てる。変えるのは引数で渡したところだけ。"""
     return Agent(
         instructions=instructions,
         tools=[
@@ -52,6 +58,17 @@ VARIANTS = {
         "search_glossary の説明文の「1つだけ入れる」を「まとめて入れる」に変える",
         build(search_doc=SEARCH_DOC.replace(ONE_TERM, MANY_TERMS)),
     ),
+    "quiz-at-end": (
+        "INSTRUCTIONS の「回答の最後に、関係する回（第N回）を示す」を「回答の最後に、確認問題を1問出す」に変える",
+        build(instructions=INSTRUCTIONS.replace(SHOW_LECTURE, QUIZ_AT_END)),
+    ),
+    "no-search-hint": (
+        "追加の確認（2か所）：no-must-search に加えて、search_glossary の説明文の「…について答える前に使うこと。」も消す",
+        build(
+            instructions=INSTRUCTIONS.replace(MUST_SEARCH, ""),
+            search_doc=SEARCH_DOC.replace(USE_BEFORE, ""),
+        ),
+    ),
 }
 
 Q_LEVELS = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
@@ -60,9 +77,12 @@ Q_LORA = "LoRAとQLoRAの違いは？"
 PLAN = [
     ("base", Q_LEVELS),
     ("no-must-search", Q_LEVELS),
+    ("no-search-hint", Q_LEVELS),
     ("base", Q_LORA),
-    ("many-terms", Q_LORA),
     ("no-must-search", Q_LORA),
+    ("no-search-hint", Q_LORA),
+    ("many-terms", Q_LORA),
+    ("quiz-at-end", Q_LORA),
 ]
 
 
