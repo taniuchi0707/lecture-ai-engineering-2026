@@ -19,6 +19,7 @@ from app.mcp_agent import (
 )
 
 GLOSSARY_TOOL = "glossary_search_glossary"  # 設定ファイルのサーバー名 "glossary" が前に付く
+QUIZ_TOOL = "glossary_make_quiz"  # 宿題（実装）で公開したツール
 
 
 def _glossary_only_config(tmp_path):
@@ -89,3 +90,16 @@ def test_config_mistakes_are_reported_in_words(tmp_path, text, expected):
     path.write_text(text, encoding="utf-8")
     with pytest.raises(ConfigError, match=expected):
         read_config(path)
+
+
+def test_make_quiz_out_of_range_message_reaches_model(tmp_path):
+    """宿題（実装）: 用語集に無い回を渡すと、例外ではなく、用語がある回を添えたメッセージがモデルに戻る。"""
+    # TestModel は int の引数に 0 を入れて呼ぶ。第0回は用語集に無い回
+    model = TestModel(call_tools=[QUIZ_TOOL])
+    result = build_mcp_agent(_glossary_only_config(tmp_path)).run_sync("第0回のクイズを作って", model=model)
+
+    returns = [p for p in _parts(result, ToolReturnPart) if p.tool_name == QUIZ_TOOL]
+    assert returns, "make_quiz が MCP 経由で呼ばれていない"
+    text = str(returns[0].content)
+    assert "第0回の用語は用語集にない" in text
+    assert "用語がある回: 第1回" in text
